@@ -1,2 +1,2 @@
 # cmk
-Person detection and re-ID using CMK
+Person detection, re-ID, tracking and counting using CMK
