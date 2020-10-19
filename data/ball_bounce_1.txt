@@ -1,0 +1,14 @@
+float xc = 285.0f, yc = 60.0f, hx = 30.0f, hy = 30.0f, simi = 0.0f, time_sum = 0.0f;
+namespace behav {
+    const std::string INPUT_VID = "../data/ball_bounce_1.mp4";
+    const uint8_t FRAME_START = 8;
+    const uint32_t FRAME_STOP = 100000;
+    const uint8_t FRAME_GAP = 1;
+    const uint16_t BINS = 4096;
+    const float SHIFT_STEP_MIN = 0.1f;
+    const uint8_t ITERATION_MAX = 10;
+    const float SCALE_STEP = 0.1;
+    const float SCALE_ADAPT = 0.1;
+    const float POS_ERR = 5;
+    const bool KALMAN_ON = true;
+}
