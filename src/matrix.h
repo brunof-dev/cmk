@@ -1,8 +1,8 @@
 #pragma once
 
 // General modules
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
 
 namespace matrix {
     template <typename T, uint8_t rows, uint8_t cols> uint8_t getCols(const T (&mat)[rows][cols]);

@@ -8,8 +8,8 @@ namespace behav {
     // General behavior
     /*************************************************************************/
     const std::string INPUT_VID = "../data/MOT17-09.webm";
-    const uint32_t FRAME_START = 6;
-    const uint32_t FRAME_STOP = 100000;
+    const uint32_t FRAME_START = 80;
+    const uint32_t FRAME_STOP = 10000;
     const uint8_t FRAME_GAP = 5;
     const bool KALMAN_ON = true;
     /*************************************************************************/

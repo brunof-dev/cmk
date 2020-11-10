@@ -6,76 +6,87 @@ int main() {
     cv::VideoCapture vid_reader(behav::INPUT_VID);
     cv::Mat frame_data, roi_data;
     Benchmark benchmark;
-    bool rc = false, target_init = false, kalman_init = true;
-    float xc = 884.0f, yc = 282.0f, hx = 42.0f, hy = 90.0f, simi = 0.0f, time_sum = 0.0f;
-    std::vector<float> target_model(behav::BINS, 0.0f);
+
+    // Blobs
+    struct data::ellipse ellipse_a = {792.0f, 288.0f, 60.0f, 125.0f, 0.0f};
+    struct data::ellipse ellipse_b = {898.0f, 275.0f, 55.0f, 140.0f, 0.0f};
+    Blob blob_a(ellipse_a);
+    Blob blob_b(ellipse_b);
+    Person person_a(behav::FRAME_START, blob_a);
+    Person person_b(behav::FRAME_START, blob_b);
+    std::vector<Person> person_vec;
+    person_vec.push_back(person_a);
+    person_vec.push_back(person_b);
 
     for(uint32_t frame_num = 1;;frame_num++) {
-        // benchmark.start();
         // Capture frame
         /*************************************************************************/
-        rc = vid_reader.read(frame_data);
+        bool rc = vid_reader.read(frame_data);
         if (rc == false) {
             vid_reader.release();
             break;
         }
-        // std::cout << "frame_num: " << frame_num << std::endl;
         if (frame_num >= behav::FRAME_STOP) break;
         if (frame_num < (behav::FRAME_START - 1)) continue;
+        std::cout << "frame_num: " << frame_num << std::endl;
         /*************************************************************************/
 
-        // Kalman filter (prediction)
+        // Track all targets
         /*************************************************************************/
-        if (target_init && (((frame_num - behav::FRAME_START) % behav::FRAME_GAP) == 0) && behav::KALMAN_ON) {
-            if (kalman_init) {
-                kalman::init(xc, yc, hx, hy);
-                kalman_init = false;
+        if (((frame_num - behav::FRAME_START) % behav::FRAME_GAP) == 0) {
+            // Person loop
+            for (std::vector<Person>::iterator it = person_vec.begin(); it != person_vec.end(); it++) {
+                std::vector<BlobData>* blob_data_ptr = it->getData();
+                // Blob loop
+                for (std::vector<BlobData>::iterator jt = blob_data_ptr->begin(); jt != blob_data_ptr->end(); jt++) {
+                    // Get handlers
+                    Kalman* kalman_hdl = &(std::get<Person::KALMAN_INDEX>(*jt));
+                    Blob* blob_hdl = &(std::get<Person::BLOB_INDEX>(*jt));
+                    std::vector<float>* target_hdl = &(std::get<Person::TARGET_INDEX>(*jt));
+
+                    // Get ellipse data from blob handler
+                    struct data::ellipse ellipse = blob_hdl->getEllipse();
+                    float xc = ellipse.xc, yc = ellipse.yc, hx = ellipse.hx, hy = ellipse.hy, simi = 0.0f;
+
+                    if (blob_hdl->isInit()) {
+                        // Kalman filter (prediction)
+                        /*************************************************************************/
+                        if (behav::KALMAN_ON) {
+                            if (!kalman_hdl->isInit()) kalman_hdl->init(xc, yc, hx, hy);
+                            kalman_hdl->predict(hx, hy);
+                        }
+                        /*************************************************************************/
+
+                        // Mean shift (measure)
+                        /*************************************************************************/
+                        simi = mean_shift::meanShift(frame_data, xc, yc, hx, hy, *target_hdl);
+                        /*************************************************************************/
+
+                        // Kalman filter (update)
+                        /*************************************************************************/
+                        if (behav::KALMAN_ON) kalman_hdl->update(xc, yc, hx, hy, simi);
+                        /*************************************************************************/
+                    }
+
+                    // Initialize/Update target model
+                    /*************************************************************************/
+                    float norm_factor = mean_shift::getNormFactor(hx, hy);
+                    cv::Mat roi_data = common::getROI(frame_data, xc, yc, hx, hy);
+                    *target_hdl = mean_shift::getModel(roi_data, xc, yc, hx, hy, norm_factor);
+                    if (!blob_hdl->isInit()) blob_hdl->setInit();
+                    /*************************************************************************/
+
+                    // Update ellipse data of blob handler
+                    ellipse.xc = xc, ellipse.yc = yc, ellipse.hx = hx, ellipse.hy = hy;
+                    blob_hdl->updateAll(ellipse);
+                }
             }
-            // benchmark.start();
-            kalman::predict(hx, hy);
-            // benchmark.end("predict");
-        }
-        /*************************************************************************/
-
-        // Mean shift (measure)
-        /*************************************************************************/
-        if (target_init && (((frame_num - behav::FRAME_START) % behav::FRAME_GAP) == 0)) {
-            // benchmark.start();
-            simi = mean_shift::meanShift(frame_data, xc, yc, hx, hy, target_model);
-            // benchmark.end("mean_shift");
-        }
-        /*************************************************************************/
-
-        // Kalman filter (update)
-        /*************************************************************************/
-        if (target_init && (((frame_num - behav::FRAME_START) % behav::FRAME_GAP) == 0) && behav::KALMAN_ON) {
-            // benchmark.start();
-            kalman::update(xc, yc, hx, hy, simi);
-            // benchmark.end("update");
-        }
-        /*************************************************************************/
-
-        // Initialize/Update target model
-        /*************************************************************************/
-        if ((((frame_num - behav::FRAME_START) % behav::FRAME_GAP) == 0) || (frame_num == (behav::FRAME_START - 1))) {
-            float norm_factor = mean_shift::getNormFactor(hx, hy);
-            cv::Mat roi_data = common::getROI(frame_data, xc, yc, hx, hy);
-            target_model = mean_shift::getModel(roi_data, xc, yc, hx, hy, norm_factor);
-            target_init = true;
         }
         /*************************************************************************/
 
         // Show results
         /*************************************************************************/
-        common::draw(frame_data, xc, yc, hx, hy);
-        /*************************************************************************/
-
-        // Benchmark
-        /*************************************************************************/
-        // float frame_time = benchmark.end("frame");
-        // time_sum += frame_time;
-        // float frame_avg = time_sum / static_cast<float>(frame_num);
-        // std::cout << "frame_avg: " <<  frame_avg << " ms" << std::endl;
+        common::drawPersonVec(frame_data, person_vec, "rect");
         /*************************************************************************/
     }
     std::cout << "Program finished." << std::endl;
