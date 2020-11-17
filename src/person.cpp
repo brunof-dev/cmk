@@ -19,3 +19,5 @@ std::vector<Blob> Person::getBlobVec() const {
     }
     return(blob_vec);
 }
+
+uint32_t Person::getLastFrame(void) const { return (std::get<FRAME_NUM_INDEX>(m_data.at(m_data.size() - 1))); }

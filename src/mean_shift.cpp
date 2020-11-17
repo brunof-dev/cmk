@@ -188,7 +188,7 @@ void mean_shift::getShiftVector(const cv::Mat& roi_data, const float xc, const f
     delta_y = (delta_y_sum / weight_sum) * hy * -1.0f;
 }
 
-float mean_shift::updateCenter(const cv::Mat& img_data, float& xc, float& yc, const float hx, const float hy,
+float mean_shift::updateCenter(const cv::Mat& img_data, float& xc, float& yc, float& hx, float& hy,
                                const std::vector<float>& target_model) {
     float old_simi = 0.0f, simi = 0.0f;
     const float norm_factor = mean_shift::getNormFactor(hx, hy);
@@ -234,9 +234,7 @@ float mean_shift::meanShift(const cv::Mat& img_data, float& xc, float& yc, float
         // Update center of candidate ellipse
         float hx_try = it->first;
         float hy_try = it->second;
-        // std::cout << "xc: " << xc << ", yc: " << yc << ", hx_try: " << hx_try << ", hy_try: " << hy_try << std::endl;
         float simi = updateCenter(img_data, xc, yc, hx_try, hy_try, target_model);
-        // std::cout << "simi: " << simi << std::endl;
 
         // Retrieve best ellipse dimensions and coordinates
         if (simi > best_simi) {
@@ -257,6 +255,5 @@ float mean_shift::meanShift(const cv::Mat& img_data, float& xc, float& yc, float
     hy = behav::SCALE_ADAPT * hy_opt + (1 - behav::SCALE_ADAPT) * hy;
     xc = xc_opt;
     yc = yc_opt;
-    // std::cout << "hx_opt: " << hx_opt << ", hy_opt: " << hy_opt << ", hx: " << hx << ", hy: " << hy << std::endl;
     return(best_simi);
 }

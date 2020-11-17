@@ -29,4 +29,19 @@ namespace behav {
     const float SCALE_ERR_RATE_MEASURE = 0.005;
     const float SCALE_ERR_RATE_PROC = 0.7;
     /*************************************************************************/
+
+    // Neural network
+    /*************************************************************************/
+    const std::string DEVICE = "CPU";
+    const std::string INPUT_BLOB = "image_tensor";
+    const std::string MODEL_XML = "/home/bruno/openvino_models/ir/public/ssdlite_mobilenet_v2/FP32/ssdlite_mobilenet_v2.xml";
+    const std::string MODEL_BIN = "/home/bruno/openvino_models/ir/public/ssdlite_mobilenet_v2/FP32/ssdlite_mobilenet_v2.bin";
+    const std::string OUTPUT_BLOB = "DetectionOutput";
+    const int16_t END_CODE = -1;
+    const uint16_t HUMAN = 1;
+    const float CONF_LEVEL = 0.0f;
+    const uint16_t MAX_WIDTH = 300;
+    const uint16_t MAX_HEIGHT = 600;
+    const float IOU = 0.25;
+    /*************************************************************************/
 }

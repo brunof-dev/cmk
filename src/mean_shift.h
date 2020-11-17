@@ -24,8 +24,6 @@ namespace mean_shift {
     void getShiftVector(const cv::Mat& roi_data, const float xc, const float yc, const float hx, const float hy,
                         const std::vector <float>& target_model, const std::vector <float>& cand_model,
                         float& delta_x, float& delta_y);
-    float updateCenter(const cv::Mat& img_data, float& xc, float& yc, const float hx, const float hy,
-                       const std::vector<float>& target_model);
-    float meanShift(const cv::Mat& img_data, float& xc, float& yc, float& hx, float& hy,
-                    const std::vector<float>& target_model);
+    float updateCenter(const cv::Mat& img_data, float& xc, float& yc, float& hx, float& hy, const std::vector<float>& target_model);
+    float meanShift(const cv::Mat& img_data, float& xc, float& yc, float& hx, float& hy, const std::vector<float>& target_model);
 }

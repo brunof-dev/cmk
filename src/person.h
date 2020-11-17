@@ -28,4 +28,5 @@ class Person {
         // Getters
         std::vector<BlobData>* getData(void);
         std::vector<Blob> getBlobVec(void) const;
+        uint32_t getLastFrame(void) const;
 };

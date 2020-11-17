@@ -6,17 +6,24 @@ int main() {
     cv::VideoCapture vid_reader(behav::INPUT_VID);
     cv::Mat frame_data, roi_data;
     Benchmark benchmark;
+    std::vector<Person> person_vec;
 
     // Blobs
-    struct data::ellipse ellipse_a = {792.0f, 288.0f, 60.0f, 125.0f, 0.0f};
-    struct data::ellipse ellipse_b = {898.0f, 275.0f, 55.0f, 140.0f, 0.0f};
-    Blob blob_a(ellipse_a);
-    Blob blob_b(ellipse_b);
-    Person person_a(behav::FRAME_START, blob_a);
-    Person person_b(behav::FRAME_START, blob_b);
-    std::vector<Person> person_vec;
-    person_vec.push_back(person_a);
-    person_vec.push_back(person_b);
+    // struct data::ellipse ellipse_a = {792.0f, 288.0f, 60.0f, 125.0f, 0.0f};
+    // struct data::ellipse ellipse_b = {898.0f, 275.0f, 55.0f, 140.0f, 0.0f};
+    // Blob blob_a(ellipse_a);
+    // Blob blob_b(ellipse_b);
+    // Person person_a(behav::FRAME_START, blob_a);
+    // Person person_b(behav::FRAME_START, blob_b);
+    // person_vec.push_back(person_a);
+    // person_vec.push_back(person_b);
+
+    // Neural network setup
+    /*************************************************************************/
+    InferenceEngine::InferRequest infer_req;
+    uint16_t net_width = 0, net_height = 0;
+    neural::setup(infer_req, net_width, net_height);
+    /*************************************************************************/
 
     for(uint32_t frame_num = 1;;frame_num++) {
         // Capture frame
@@ -31,11 +38,24 @@ int main() {
         std::cout << "frame_num: " << frame_num << std::endl;
         /*************************************************************************/
 
+        // Detect all targets
+        /*************************************************************************/
+        neural::detect(infer_req, frame_data, frame_num, net_width, net_height, person_vec);
+        /*************************************************************************/
+
+        // CMK split
+        /*************************************************************************/
+        /*************************************************************************/
+
         // Track all targets
         /*************************************************************************/
         if (((frame_num - behav::FRAME_START) % behav::FRAME_GAP) == 0) {
             // Person loop
             for (std::vector<Person>::iterator it = person_vec.begin(); it != person_vec.end(); it++) {
+                // TODO: limit people storage to a fixed number of frames in the past
+                // TODO: smart person ID scheme
+                // Skip old people
+                if (it->getLastFrame() != frame_num) continue;
                 std::vector<BlobData>* blob_data_ptr = it->getData();
                 // Blob loop
                 for (std::vector<BlobData>::iterator jt = blob_data_ptr->begin(); jt != blob_data_ptr->end(); jt++) {
@@ -68,6 +88,7 @@ int main() {
                         /*************************************************************************/
                     }
 
+
                     // Initialize/Update target model
                     /*************************************************************************/
                     float norm_factor = mean_shift::getNormFactor(hx, hy);
@@ -86,7 +107,7 @@ int main() {
 
         // Show results
         /*************************************************************************/
-        common::drawPersonVec(frame_data, person_vec, "rect");
+        common::drawPersonVec(frame_data, frame_num, person_vec, "rect");
         /*************************************************************************/
     }
     std::cout << "Program finished." << std::endl;

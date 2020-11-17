@@ -1,6 +1,52 @@
 #include "common.h"
 
-cv::Mat common::getROI(const cv::Mat& img_data, const float xc, const float yc, const float hx, const float hy) {
+void common::getFrameDim(const cv::Mat& img_data, uint16_t& frame_width, uint16_t& frame_height) {
+    frame_width = img_data.cols;
+    frame_height = img_data.rows;
+}
+
+bool common::sanity(const cv::Mat& img_data, const float xc, const float yc, const float hx, const float hy) {
+    bool rc = true;
+
+    // Get frame dimensions
+    uint16_t frame_width, frame_height;
+    getFrameDim(img_data, frame_width, frame_height);
+
+    // Minimum/maximum coordinates
+    float xmin = 0.0f, xmax = static_cast<float>(frame_width) - 1.0f, ymin = 0.0f, ymax = static_cast<float>(frame_height) - 1.0f;
+
+    // Check coordinates
+    if (((xc - hx) < xmin) || ((xc + hx) > xmax)) rc = false;
+    else if (((yc - hy) < ymin) || ((yc + hy) > ymax)) rc = false;
+
+    return(rc);
+}
+
+void common::fixCoord(const cv::Mat& img_data, float& xc, float& yc, float& hx, float& hy) {
+    // Get frame dimensions
+    uint16_t frame_width, frame_height;
+    getFrameDim(img_data, frame_width, frame_height);
+
+    // Minimum/maximum coordinates
+    float xmin = 0.0f, xmax = static_cast<float>(frame_width) - 1.0f, ymin = 0.0f, ymax = static_cast<float>(frame_height) - 1.0f;
+
+    // Fix center coordinates
+    if (xc < xmin) xc = xmin;
+    else if (xc > xmax) xc = xmax;
+    if (yc < ymin) yc = ymin;
+    else if (yc > ymax) yc = ymax;
+
+    // Fix ellipse axis
+    if ((xc - hx) < xmin) hx = xc;
+    else if ((xc + hx) > xmax) hx = xmax - xc;
+    if ((yc - hy) < ymin) hy = yc;
+    else if ((yc + hy) > ymax) hy = ymax - yc;
+}
+
+cv::Mat common::getROI(const cv::Mat& img_data, float& xc, float& yc, float& hx, float& hy) {
+    // Sanity check
+    if (!sanity(img_data, xc, yc, hx, hy)) fixCoord(img_data, xc, yc, hx, hy);
+
     // Black image
     cv::Mat mask(img_data.rows, img_data.cols, CV_8UC3, cv::Scalar(0, 0, 0));
 
@@ -18,10 +64,10 @@ cv::Mat common::getROI(const cv::Mat& img_data, const float xc, const float yc, 
     return(crop_data);
 }
 
-void common::drawPersonVec(cv::Mat& img_data, const std::vector<Person>& person_vec, const std::string type) {
+void common::drawPersonVec(cv::Mat& img_data, const uint32_t frame_num, const std::vector<Person>& person_vec, const std::string type) {
     // Draw
     for (std::vector<Person>::const_iterator it = person_vec.cbegin(); it != person_vec.cend(); it++) {
-        drawBlobVec(img_data, it->getBlobVec(), type);
+        if (it->getLastFrame() == frame_num) drawBlobVec(img_data, it->getBlobVec(), type);
     }
     // Play
     cv::imshow("CMK", img_data);
