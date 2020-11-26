@@ -1,5 +1,9 @@
 #include "kalman.h"
 
+// Static members
+constexpr float Kalman::F[nx][nx];
+constexpr float Kalman::H[nz][nx];
+
 // Constructor
 Kalman::Kalman() {
     m_init = false;

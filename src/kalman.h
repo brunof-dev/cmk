@@ -15,7 +15,7 @@ class Kalman {
     // Number of measurements
     static const uint8_t nz = 4;
     // State transition matrix
-    const float F[nx][nx] = {
+    static constexpr float F[nx][nx] = {
         {1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f},
         {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f},
@@ -24,7 +24,7 @@ class Kalman {
         {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f},
     };
     // Measurement matrix
-    const float H[nz][nx] = {
+    static constexpr float H[nz][nx] = {
         {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f},

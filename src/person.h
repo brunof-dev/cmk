@@ -2,31 +2,32 @@
 
 // General modules
 #include <vector>
-#include <tuple>
 
 // Local modules
-#include "blob.h"
-#include "kalman.h"
-
-typedef std::tuple<uint32_t, Blob, Kalman, std::vector<float>> BlobData;
+#include "blob_data.h"
 
 class Person {
     private:
-        std::vector<BlobData> m_data;
-        bool m_target_init;
+        int32_t m_id;
 
     public:
-        static const uint8_t FRAME_NUM_INDEX = 0;
-        static const uint8_t BLOB_INDEX = 1;
-        static const uint8_t KALMAN_INDEX = 2;
-        static const uint8_t TARGET_INDEX = 3;
+        // Members
+        static uint32_t count;
+        std::vector<BlobData> m_blob_data;
 
         // Constructors
-        Person();
-        Person(uint32_t frame_num, Blob blob);
+        Person(const uint32_t frame_num, const Blob blob);
 
         // Getters
-        std::vector<BlobData>* getData(void);
-        std::vector<Blob> getBlobVec(void) const;
+        int32_t getId(void) const;
+
+        // Setters
+        void setId(const int32_t id);
+
+        // General functions
+        std::vector<Blob> getBlobVec(const uint32_t frame_num) const;
+        std::vector<Blob> getBlobVecAll(void) const;
         uint32_t getLastFrame(void) const;
+        bool isSplit(void);
+        void addBlobData(const uint32_t frame_num, const Blob blob);
 };

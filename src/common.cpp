@@ -1,5 +1,6 @@
 #include "common.h"
 
+// General functions
 void common::getFrameDim(const cv::Mat& img_data, uint16_t& frame_width, uint16_t& frame_height) {
     frame_width = img_data.cols;
     frame_height = img_data.rows;
@@ -64,36 +65,76 @@ cv::Mat common::getROI(const cv::Mat& img_data, float& xc, float& yc, float& hx,
     return(crop_data);
 }
 
+bool common::readFrame(cv::VideoCapture& vid_reader, cv::Mat& img_data) {
+    bool rc = vid_reader.read(img_data);
+    if (rc == false) vid_reader.release();
+    return(rc);
+}
+
+uint32_t common::distance(const struct data::rect a, const struct data::rect b) {
+    // Coordinates of the center of the bounding boxes
+    uint16_t a_xc = static_cast<uint16_t>((a.xmin + a.xmax) * 0.5);
+    uint16_t a_yc = static_cast<uint16_t>((a.ymin + a.ymax) * 0.5);
+    uint16_t b_xc = static_cast<uint16_t>((b.xmin + b.xmax) * 0.5);
+    uint16_t b_yc = static_cast<uint16_t>((b.ymin + b.ymax) * 0.5);
+
+    // Distance
+    uint32_t dist = (a_xc - b_xc) * (a_xc - b_xc) + (a_yc - b_yc) * (a_yc - b_yc);
+    return(dist);
+}
+
+// Drawing functions
 void common::drawPersonVec(cv::Mat& img_data, const uint32_t frame_num, const std::vector<Person>& person_vec, const std::string type) {
     // Draw
     for (std::vector<Person>::const_iterator it = person_vec.cbegin(); it != person_vec.cend(); it++) {
-        if (it->getLastFrame() == frame_num) drawBlobVec(img_data, it->getBlobVec(), type);
+        if (it->getLastFrame() == frame_num) drawBlobVec(img_data, it->getId(), it->getBlobVec(frame_num), type);
     }
     // Play
     cv::imshow("CMK", img_data);
     cv::waitKey(1);
 }
 
-void common::drawBlobVec(cv::Mat& img_data, const std::vector<Blob>& blob_vec, const std::string type) {
-    // Draw
-    if (!type.compare("rect")) drawBlobVecRect(img_data, blob_vec);
-    else if (!type.compare("ellipse")) drawBlobVecEllipse(img_data, blob_vec);
+cv::Scalar common::getRandColor(const uint32_t seed) {
+    srand(seed);
+    uint8_t red = rand() % 255;
+    uint8_t green = rand() % 255;
+    uint8_t blue = rand() % 255;
+    cv::Scalar color(red, green, blue);
+    return(color);
 }
 
-void common::drawBlobVecRect(cv::Mat& img_data, const std::vector<Blob>& blob_vec) {
-    for (std::vector<Blob>::const_iterator it = blob_vec.cbegin(); it != blob_vec.cend(); it++) drawBlob(img_data, it->getRect());
+void common::drawBlobVec(cv::Mat& img_data, const uint32_t id, const std::vector<Blob>& blob_vec, const std::string type) {
+    cv::Scalar color = getRandColor(id);
+    if (!type.compare("rect")) drawVecRect(img_data, id, color, blob_vec);
+    else if (!type.compare("ellipse")) drawVecEllipse(img_data, id, color, blob_vec);
 }
 
-void common::drawBlobVecEllipse(cv::Mat& img_data, const std::vector<Blob>& blob_vec) {
+void common::drawVecRect(cv::Mat& img_data, const uint32_t id, const cv::Scalar color, const std::vector<Blob>& blob_vec) {
     for (std::vector<Blob>::const_iterator it = blob_vec.cbegin(); it != blob_vec.cend(); it++) {
-        drawBlob(img_data, it->getEllipse());
+        drawText(img_data, id, color, it->getRect());
+        drawBlob(img_data, color, it->getRect());
     }
 }
 
-void common::drawBlob(cv::Mat& img_data, const struct data::rect rect) {
-    cv::rectangle(img_data, cv::Point2i(rect.xmin, rect.ymin), cv::Point2i(rect.xmax, rect.ymax), cv::Scalar(255, 255, 255), 2);
+void common::drawVecEllipse(cv::Mat& img_data, const uint32_t id, const cv::Scalar color, const std::vector<Blob>& blob_vec) {
+    for (std::vector<Blob>::const_iterator it = blob_vec.cbegin(); it != blob_vec.cend(); it++) {
+        drawText(img_data, id, color, it->getEllipse());
+        drawBlob(img_data, color, it->getEllipse());
+    }
 }
 
-void common::drawBlob(cv::Mat& img_data, const struct data::ellipse ellipse) {
-    cv::ellipse(img_data, cv::Point2f(ellipse.xc, ellipse.yc), cv::Size2f(ellipse.hx, ellipse.hy), 0, 0, 360, cv::Scalar(255, 255, 255), 2);
+void common::drawText(cv::Mat& img_data, const uint32_t id, const cv::Scalar color, const struct data::rect rect) {
+    cv::putText(img_data, std::to_string(id), cv::Point2i(rect.xmin, rect.ymin - behav::TXT_OFFSET), cv::FONT_HERSHEY_SIMPLEX, 0.75, color);
+}
+
+void common::drawText(cv::Mat& img_data, const uint32_t id, const cv::Scalar color, const struct data::ellipse ellipse) {
+    cv::putText(img_data, std::to_string(id), cv::Point2i(ellipse.xc, ellipse.yc - ellipse.hy - behav::TXT_OFFSET), cv::FONT_HERSHEY_SIMPLEX, 0.75, color);
+}
+
+void common::drawBlob(cv::Mat& img_data, const cv::Scalar color, const struct data::rect rect) {
+    cv::rectangle(img_data, cv::Point2i(rect.xmin, rect.ymin), cv::Point2i(rect.xmax, rect.ymax), color, 2);
+}
+
+void common::drawBlob(cv::Mat& img_data, const cv::Scalar color, const struct data::ellipse ellipse) {
+    cv::ellipse(img_data, cv::Point2f(ellipse.xc, ellipse.yc), cv::Size2f(ellipse.hx, ellipse.hy), 0, 0, 360, color, 2);
 }

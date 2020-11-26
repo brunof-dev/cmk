@@ -9,6 +9,5 @@
 #include "behav.h"
 #include "benchmark.h"
 #include "common.h"
-#include "mean_shift.h"
 #include "neural.h"
-#include "person.h"
+#include "cmk.h"

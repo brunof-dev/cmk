@@ -147,15 +147,7 @@ void neural::nonMaxSup(std::vector<Blob>& blob_vec) {
     }
 }
 
-void neural::getPersonVec(const std::vector<Blob>& blob_vec, const uint32_t frame_num, std::vector<Person>& person_vec) {
-    for (std::vector<Blob>::const_iterator it = blob_vec.cbegin(); it != blob_vec.cend(); it++) {
-        Person person(frame_num, *it);
-        person_vec.push_back(person);
-    }
-}
-
-void neural::detect(InferenceEngine::InferRequest& infer_req, const cv::Mat& img_data, const uint32_t frame_num, const uint16_t net_width, const uint16_t net_height,
-                    std::vector<Person>& person_vec) {
+void neural::detect(InferenceEngine::InferRequest& infer_req, const cv::Mat& img_data, const uint16_t net_width, const uint16_t net_height, std::vector<Blob>& blob_vec) {
     // Pre-process frame
     cv::Mat net_data;
     cv::resize(img_data, net_data, cv::Size(net_width, net_height));
@@ -171,10 +163,6 @@ void neural::detect(InferenceEngine::InferRequest& infer_req, const cv::Mat& img
     InferenceEngine::Blob::Ptr output_blob = infer_req.GetBlob(behav::OUTPUT_BLOB);
     uint16_t frame_width, frame_height;
     common::getFrameDim(img_data, frame_width, frame_height);
-    std::vector<Blob> blob_vec;
     getBlobVec(output_blob, frame_width, frame_height, blob_vec);
     nonMaxSup(blob_vec);
-
-    // Create person vector
-    getPersonVec(blob_vec, frame_num, person_vec);
 }

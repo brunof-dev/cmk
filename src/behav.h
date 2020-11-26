@@ -8,7 +8,7 @@ namespace behav {
     // General behavior
     /*************************************************************************/
     const std::string INPUT_VID = "../data/MOT17-09.webm";
-    const uint32_t FRAME_START = 80;
+    const uint32_t FRAME_START = 1;
     const uint32_t FRAME_STOP = 10000;
     const uint8_t FRAME_GAP = 5;
     const bool KALMAN_ON = true;
@@ -43,5 +43,18 @@ namespace behav {
     const uint16_t MAX_WIDTH = 300;
     const uint16_t MAX_HEIGHT = 600;
     const float IOU = 0.25;
+    /*************************************************************************/
+
+    // CMK
+    /*************************************************************************/
+    const uint16_t STACK_SIZE = 5;
+    const uint16_t DIST = 300;
+    const int32_t INVALID_ID = -1;
+    const int32_t INVALID_NB_INDEX = -1;
+    /*************************************************************************/
+
+    // Drawing
+    /*************************************************************************/
+    const uint16_t TXT_OFFSET = 10;
     /*************************************************************************/
 }

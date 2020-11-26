@@ -1,29 +1,33 @@
 #include "blob.h"
 
+// Constructors
 Blob::Blob() {
-    m_init = false;
+    m_dummy = true;
+    setId(behav::INVALID_ID);
 }
 
 Blob::Blob(const struct data::rect rect) {
-    m_init = false;
+    m_dummy = false;
+    setId(behav::INVALID_ID);
     updateAll(rect);
 }
 
 Blob::Blob(const struct data::ellipse ellipse) {
-    m_init = false;
+    m_dummy = false;
+    setId(behav::INVALID_ID);
     updateAll(ellipse);
 }
 
 // Getters
-struct data::rect Blob::getRect(void) const { return m_rect; }
-struct data::ellipse Blob::getEllipse(void) const { return m_ellipse; }
-bool Blob::isInit(void) const { return m_init; }
+struct data::rect Blob::getRect() const { return(m_rect); }
+struct data::ellipse Blob::getEllipse() const { return(m_ellipse); }
+bool Blob::isDummy(void) const { return(m_dummy); }
+int32_t Blob::getId(void) const { return(m_id); }
 
 // Setters
 void Blob::setRect(const struct data::rect rect) { m_rect = rect; }
 void Blob::setEllipse(const struct data::ellipse ellipse) { m_ellipse = ellipse; }
-void Blob::setInit() { m_init = true; }
-void Blob::clearInit() { m_init = false; }
+void Blob::setId(const int32_t id) { m_id = id; }
 
 // Operators
 bool Blob::operator==(const Blob& blob) const {
