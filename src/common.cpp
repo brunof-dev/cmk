@@ -85,10 +85,14 @@ uint32_t common::distance(const struct data::rect a, const struct data::rect b) 
 
 // Drawing functions
 void common::drawPersonVec(cv::Mat& img_data, const uint32_t frame_num, const std::vector<Person>& person_vec, const std::string type) {
-    // Draw
+    // Draw blobs
     for (std::vector<Person>::const_iterator it = person_vec.cbegin(); it != person_vec.cend(); it++) {
-        if (it->getLastFrame() == frame_num) drawBlobVec(img_data, it->getId(), it->getBlobVec(frame_num), type);
+        if ((it->getLastFrame() == frame_num) && (it->isEnrolled())) drawBlobVec(img_data, it->getId(), it->getBlobVec(frame_num), type);
     }
+    // Person counter
+    std::string text = "People: " + std::to_string(Person::enroll_count);
+    cv::putText(img_data, text, cv::Point2i(50, 50), cv::FONT_HERSHEY_SIMPLEX, 0.75, cv::Scalar(255, 255, 255));
+
     // Play
     cv::imshow("CMK", img_data);
     cv::waitKey(1);

@@ -21,32 +21,28 @@ void cmk::findNeighbour(const Blob blob, const std::vector<Blob>& blob_vec, int3
     }
 }
 
-void cmk::assignID(std::vector<Blob>& blob_vec, std::vector<std::vector<Blob>>& blob_stack, const uint32_t frame_num, std::vector<Person>& person_vec) {
+void cmk::assignID(std::vector<Blob>& blob_vec, const std::vector<std::vector<Blob>>& blob_stack, const uint32_t frame_num, std::vector<Person>& person_vec) {
     for (std::vector<Blob>::iterator it = blob_vec.begin(); it != blob_vec.end(); it++) {
         // Find neighbour blob in previous frames
         int32_t nb_index = behav::INVALID_NB_INDEX;
-        std::vector<std::vector<Blob>>::iterator jt = blob_stack.begin();
-        for (; jt != blob_stack.end(); jt++) {
+        std::vector<std::vector<Blob>>::const_iterator jt = blob_stack.cbegin();
+        for (; jt != blob_stack.cend(); jt++) {
             findNeighbour(*it, *jt, nb_index);
-            if (nb_index  != behav::INVALID_NB_INDEX) break;
+            if (nb_index != behav::INVALID_NB_INDEX) break;
         }
-
         // Handle IDs
-        if (nb_index != behav::INVALID_NB_INDEX) {
-            Blob& nb_blob = jt->at(nb_index);
-            int32_t nb_id = nb_blob.getId();
-            if (nb_id == behav::INVALID_ID) {
-                // New person
-                Person person(frame_num, nb_blob);
-                person_vec.push_back(person);
-                nb_blob.setId(Person::count);
-                it->setId(Person::count);
-            }
-            else {
-                // Old person
-                it->setId(nb_id);
-                person_vec.at(nb_id - 1).addBlobData(frame_num, *it);
-            }
+        if (nb_index == behav::INVALID_NB_INDEX) {
+            // New person
+            Person person(frame_num, *it);
+            person_vec.push_back(person);
+            int32_t person_id = person.getId();
+            it->setId(person_id);
+        }
+        else {
+            // Old person
+            int32_t nb_id = jt->at(nb_index).getId();
+            person_vec.at(nb_id - 1).addBlobData(frame_num, *it);
+            it->setId(nb_id);
         }
     }
 }

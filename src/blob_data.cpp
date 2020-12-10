@@ -7,6 +7,7 @@ BlobData::BlobData(const uint32_t frame_num, const Blob blob, const int32_t id) 
     m_target_init = false;
     setId(id);
     m_blob = blob;
+    m_blob.setId(id);
     m_kalman = Kalman();
 }
 

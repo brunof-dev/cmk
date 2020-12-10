@@ -47,10 +47,11 @@ namespace behav {
 
     // CMK
     /*************************************************************************/
-    const uint16_t STACK_SIZE = 5;
-    const uint16_t DIST = 300;
+    const uint16_t STACK_SIZE = 10;
+    const uint16_t DIST = 900;
     const int32_t INVALID_ID = -1;
     const int32_t INVALID_NB_INDEX = -1;
+    const uint8_t OCURRENCE = 5;
     /*************************************************************************/
 
     // Drawing

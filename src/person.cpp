@@ -1,17 +1,20 @@
 #include "person.h"
 
 // Static members
-uint32_t Person::count = 0;
+uint32_t Person::total_count = 0;
+uint32_t Person::enroll_count = 0;
 
 Person::Person(const uint32_t frame_num, const Blob blob) {
-    count++;
-    setId(count);
+    total_count++;
+    setId(total_count);
+    m_enroll = false;
     BlobData blob_data(frame_num, blob, getId());
     m_blob_data.push_back(blob_data);
 }
 
 // Getters
 int32_t Person::getId() const { return(m_id); }
+bool Person::isEnrolled(void) const { return(m_enroll); }
 
 // Setters
 void Person::setId(const int32_t id) { m_id = id; }
@@ -35,9 +38,26 @@ std::vector<Blob> Person::getBlobVecAll() const {
 
 uint32_t Person::getLastFrame(void) const { return (m_blob_data.at(m_blob_data.size() - 1).getFrameNum()); }
 
+bool Person::isSplit() { return(getBlobVec(getLastFrame()).size() > 1); }
+
+void Person::changeId(const int32_t id) {
+    setId(id);
+    for (std::vector<BlobData>::iterator it = m_blob_data.begin(); it != m_blob_data.end(); it++) {
+        it->setId(id);
+        it->m_blob.setId(id);
+    }
+}
+
+void Person::enroll() {
+    if (m_blob_data.size() >= behav::OCURRENCE) {
+        m_enroll = true;
+        enroll_count++;
+        changeId(enroll_count);
+    }
+}
+
 void Person::addBlobData(const uint32_t frame_num, const Blob blob) {
     BlobData blob_data(frame_num, blob, getId());
     m_blob_data.push_back(blob_data);
+    if (!isEnrolled()) enroll();
 }
-
-bool Person::isSplit() { return(getBlobVec(getLastFrame()).size() > 1); }

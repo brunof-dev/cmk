@@ -42,13 +42,13 @@ int main() {
 
         // CMK track
         /*************************************************************************/
-        if (((frame_num - behav::FRAME_START) % behav::FRAME_GAP) == 0) {
-            for (std::vector<Person>::iterator it = person_vec.begin(); it != person_vec.end(); it++) {
-                if ((it->getLastFrame() == frame_num) && (it->isSplit())) {
-                    cmk::track(frame_data, it->m_blob_data);
-                }
-            }
-        }
+        // if (((frame_num - behav::FRAME_START) % behav::FRAME_GAP) == 0) {
+        //     for (std::vector<Person>::iterator it = person_vec.begin(); it != person_vec.end(); it++) {
+        //         if ((it->getLastFrame() == frame_num) && (it->isSplit())) {
+        //             cmk::track(frame_data, it->m_blob_data);
+        //         }
+        //     }
+        // }
         /*************************************************************************/
 
         // Show results

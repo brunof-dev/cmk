@@ -14,7 +14,7 @@ class Blob {
         struct data::rect m_rect;
         struct data::ellipse m_ellipse;
         bool m_dummy;
-        uint32_t m_id;
+        int32_t m_id;
 
     public:
         // Constructors
