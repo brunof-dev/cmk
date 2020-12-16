@@ -94,7 +94,6 @@ void neural::getBlobVec(InferenceEngine::Blob::Ptr output_blob, const uint16_t o
 }
 
 float neural::IOU(const struct data::rect a, const struct data::rect b) {
-    float iou;
     // Assert correctness
     assert(a.xmin < a.xmax);
     assert(a.ymin < a.ymax);
@@ -108,6 +107,7 @@ float neural::IOU(const struct data::rect a, const struct data::rect b) {
     const uint16_t y_bottom = std::min(a.ymax, b.ymax);
 
     // Case of no intersection
+    float iou;
     if ((x_right < x_left) || (y_bottom < y_top)) {
         iou = 0.0;
     }
@@ -119,6 +119,12 @@ float neural::IOU(const struct data::rect a, const struct data::rect b) {
         iou = static_cast<float>(i_area) / static_cast<float>(a_area + b_area - i_area);
     }
     return(iou);
+}
+
+bool neural::isInner(const struct data::rect in, const struct data::rect out) {
+    bool rc = false;
+    if ((in.xmin > out.xmin) && (in.xmax < out.xmax) && (in.ymin > out.ymin) && (in.ymax < out.ymax)) rc = true;
+    return(rc);
 }
 
 void neural::nonMaxSup(std::vector<Blob>& blob_vec) {
@@ -135,9 +141,15 @@ void neural::nonMaxSup(std::vector<Blob>& blob_vec) {
             for (std::vector<Blob>::iterator jt = blob_vec.begin(); jt != blob_vec.end(); jt++) {
                 // Non-max suppression
                 struct data::rect rect_b = jt->getRect();
-                float iou = IOU(rect_a, rect_b);
-                if (iou > behav::IOU) {
-                    if (rect_a.conf > rect_b.conf) {
+                if (isInner(rect_b, rect_a)) {
+                    // Rectangle B is inside rectangle A
+                    jt = blob_vec.erase(jt);
+                    jt--;
+                }
+                else {
+                    float iou = IOU(rect_a, rect_b);
+                    if ((iou > behav::IOU) && (rect_a.conf > rect_b.conf)) {
+                        // IOU between rectangles is high enough and rectangle B has lower confidence level
                         jt = blob_vec.erase(jt);
                         jt--;
                     }

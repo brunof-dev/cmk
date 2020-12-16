@@ -80,6 +80,7 @@ void Blob::updateAll(const struct data::ellipse ellipse) {
 }
 
 void Blob::print(std::string type) const {
+    std::printf("id: %d\n", m_id);
     if (!type.compare("rect")) {
         std::printf("xmin: %d\n", m_rect.xmin);
         std::printf("ymin: %d\n", m_rect.ymin);

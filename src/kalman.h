@@ -5,7 +5,6 @@
 
 // Local modules
 #include "behav.h"
-#include "benchmark.h"
 #include "matrix.h"
 
 class Kalman {

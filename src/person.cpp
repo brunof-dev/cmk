@@ -7,6 +7,7 @@ uint32_t Person::enroll_count = 0;
 Person::Person(const uint32_t frame_num, const Blob blob) {
     total_count++;
     setId(total_count);
+    setNbId(behav::INVALID_ID);
     m_enroll = false;
     BlobData blob_data(frame_num, blob, getId());
     m_blob_data.push_back(blob_data);
@@ -14,10 +15,12 @@ Person::Person(const uint32_t frame_num, const Blob blob) {
 
 // Getters
 int32_t Person::getId() const { return(m_id); }
+int32_t Person::getNbId() const { return(m_nb_id); }
 bool Person::isEnrolled(void) const { return(m_enroll); }
 
 // Setters
 void Person::setId(const int32_t id) { m_id = id; }
+void Person::setNbId(const int32_t id) { m_nb_id = id; }
 
 // General functions
 std::vector<Blob> Person::getBlobVec(const uint32_t frame_num) const {
@@ -50,6 +53,7 @@ void Person::changeId(const int32_t id) {
 
 void Person::enroll() {
     if (m_blob_data.size() >= behav::OCURRENCE) {
+        setNbId(m_id);
         m_enroll = true;
         enroll_count++;
         changeId(enroll_count);

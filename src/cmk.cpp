@@ -41,7 +41,22 @@ void cmk::assignID(std::vector<Blob>& blob_vec, const std::vector<std::vector<Bl
         else {
             // Old person
             int32_t nb_id = jt->at(nb_index).getId();
-            person_vec.at(nb_id - 1).addBlobData(frame_num, *it);
+            for (std::vector<Person>::iterator kt = person_vec.begin(); kt != person_vec.end(); kt++) {
+                if (!kt->isEnrolled()) {
+                    // Not enrolled person
+                    if (kt->getId() == nb_id) {
+                        kt->addBlobData(frame_num, *it);
+                        break;
+                    }
+                }
+                else {
+                    // Enrolled person
+                    if (kt->getNbId() == nb_id) {
+                        kt->addBlobData(frame_num, *it);
+                        break;
+                    }
+                }
+            }
             it->setId(nb_id);
         }
     }

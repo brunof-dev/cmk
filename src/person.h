@@ -10,6 +10,7 @@
 class Person {
     private:
         int32_t m_id;
+        int32_t m_nb_id;
         bool m_enroll;
 
     public:
@@ -23,10 +24,12 @@ class Person {
 
         // Getters
         int32_t getId(void) const;
+        int32_t getNbId(void) const;
         bool isEnrolled(void) const;
 
         // Setters
         void setId(const int32_t id);
+        void setNbId(const int32_t id);
 
         // General functions
         std::vector<Blob> getBlobVec(const uint32_t frame_num) const;

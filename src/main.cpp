@@ -38,17 +38,24 @@ int main() {
 
         // CMK split
         /*************************************************************************/
+        // TODO: avoid two blobs to be assigned the same neighbour.
+        // This is controlled by behav::DIST. In case we have more than one blob per person at this point, preserve just the highest confidence blob.
+        // Then proceed to split the single blob person into multiple blobs for CMK tracking, based on behav::IOU_SPLIT between different people
         /*************************************************************************/
 
         // CMK track
         /*************************************************************************/
-        // if (((frame_num - behav::FRAME_START) % behav::FRAME_GAP) == 0) {
-        //     for (std::vector<Person>::iterator it = person_vec.begin(); it != person_vec.end(); it++) {
-        //         if ((it->getLastFrame() == frame_num) && (it->isSplit())) {
-        //             cmk::track(frame_data, it->m_blob_data);
-        //         }
-        //     }
-        // }
+        if (((frame_num - behav::FRAME_START) % behav::FRAME_GAP) == 0) {
+            for (std::vector<Person>::iterator it = person_vec.begin(); it != person_vec.end(); it++) {
+                if ((it->getLastFrame() == frame_num) && (it ->isSplit())) {
+                    // cmk::track(frame_data, it->m_blob_data);
+                }
+                else if ((frame_num - it->getLastFrame()) > behav::STACK_SIZE) {
+                    person_vec.erase(it);
+                    it--;
+                }
+            }
+        }
         /*************************************************************************/
 
         // Show results
