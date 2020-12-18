@@ -42,7 +42,7 @@ namespace behav {
     const float CONF_LEVEL = 0.0f;
     const uint16_t MAX_WIDTH = 300;
     const uint16_t MAX_HEIGHT = 600;
-    const float IOU = 0.25;
+    const float IOU_SUP = 0.25;
     /*************************************************************************/
 
     // CMK
@@ -50,8 +50,9 @@ namespace behav {
     const uint16_t STACK_SIZE = 10;
     const uint16_t DIST = 900;
     const int32_t INVALID_ID = -1;
-    const int32_t INVALID_NB_INDEX = -1;
+    const int32_t INVALID_INDEX = -1;
     const uint8_t OCURRENCE = 5;
+    const float IOU_SPLIT = 0.25;
     /*************************************************************************/
 
     // Drawing

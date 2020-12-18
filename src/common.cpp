@@ -71,6 +71,7 @@ bool common::readFrame(cv::VideoCapture& vid_reader, cv::Mat& img_data) {
     return(rc);
 }
 
+// Geometry related
 uint32_t common::distance(const struct data::rect a, const struct data::rect b) {
     // Coordinates of the center of the bounding boxes
     uint16_t a_xc = static_cast<uint16_t>((a.xmin + a.xmax) * 0.5);
@@ -81,6 +82,40 @@ uint32_t common::distance(const struct data::rect a, const struct data::rect b) 
     // Distance
     uint32_t dist = (a_xc - b_xc) * (a_xc - b_xc) + (a_yc - b_yc) * (a_yc - b_yc);
     return(dist);
+}
+
+float common::IOU(const struct data::rect a, const struct data::rect b) {
+    // Assert correctness
+    assert(a.xmin < a.xmax);
+    assert(a.ymin < a.ymax);
+    assert(b.xmin < b.xmax);
+    assert(b.ymin < b.ymax);
+
+    // Coordinates of intersection rectangle
+    const uint16_t x_left = std::max(a.xmin, b.xmin);
+    const uint16_t x_right = std::min(a.xmax, b.xmax);
+    const uint16_t y_top = std::max(a.ymin, b.ymin);
+    const uint16_t y_bottom = std::min(a.ymax, b.ymax);
+
+    // Case of no intersection
+    float iou;
+    if ((x_right < x_left) || (y_bottom < y_top)) {
+        iou = 0.0;
+    }
+    else {
+        // Calculate areas and ratio
+        const uint32_t i_area = (x_right - x_left + 1) * (y_bottom - y_top + 1);
+        const uint32_t a_area = (a.xmax - a.xmin + 1) * (a.ymax - a.ymin + 1);
+        const uint32_t b_area = (b.xmax - b.xmin + 1) * (b.ymax - b.ymin + 1);
+        iou = static_cast<float>(i_area) / static_cast<float>(a_area + b_area - i_area);
+    }
+    return(iou);
+}
+
+bool common::isInner(const struct data::rect in, const struct data::rect out) {
+    bool rc = false;
+    if ((in.xmin > out.xmin) && (in.xmax < out.xmax) && (in.ymin > out.ymin) && (in.ymax < out.ymax)) rc = true;
+    return(rc);
 }
 
 // Drawing functions

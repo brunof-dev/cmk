@@ -18,7 +18,11 @@ namespace common {
     cv::Mat getROI(const cv::Mat& img_data, float& xc, float& yc, float& hx, float& hy);
     bool readFrame(cv::VideoCapture& vid_reader, cv::Mat& img_data);
     template <typename T> void FIFO(const std::vector<T>& vec, std::vector<std::vector<T>>& vec_stack);
+
+    // Geometry functions
     uint32_t distance(const struct data::rect a, const struct data::rect b);
+    float IOU(const struct data::rect a, const struct data::rect b);
+    bool isInner(const struct data::rect in, const struct data::rect out);
 
     // Drawing functions
     void drawPersonVec(cv::Mat& img_data, const uint32_t frame_num, const std::vector<Person>& person_vec, const std::string type="ellipse");
