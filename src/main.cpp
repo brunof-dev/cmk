@@ -19,15 +19,16 @@ int main() {
         /*************************************************************************/
         cv::Mat frame_data;
         if (!common::readFrame(vid_reader, frame_data)) break;
-        if (frame_num >= behav::FRAME_STOP) break;
-        if (frame_num < (behav::FRAME_START - 1)) continue;
+        if (frame::isEnd(frame_num)) break;
+        if (!frame::isStart(frame_num)) continue;
         std::cout << "frame_num: " << frame_num << std::endl;
         /*************************************************************************/
 
         // Detect all targets
         /*************************************************************************/
+        // TODO: handle missing targets from CNN that were tracked by CMK
         std::vector<Blob> blob_vec;
-        neural::detect(infer_req, frame_data, net_width, net_height, blob_vec);
+        if (frame::isCNNActive(frame_num)) neural::detect(infer_req, frame_data, net_width, net_height, blob_vec);
         /*************************************************************************/
 
         // Assign ID
@@ -38,14 +39,12 @@ int main() {
 
         // CMK track
         /*************************************************************************/
-        if (((frame_num - behav::FRAME_START) % behav::FRAME_GAP) == 0) {
-            cmk::CMK(frame_data, frame_num, person_vec);
-        }
+        cmk::CMK(frame_data, frame_num, person_vec);
         /*************************************************************************/
 
         // Show results
         /*************************************************************************/
-        common::drawPersonVec(frame_data, frame_num, person_vec, "rect");
+        draw::drawPersonVec(frame_data, frame_num, person_vec, "rect");
         /*************************************************************************/
     }
     std::cout << "Program finished." << std::endl;

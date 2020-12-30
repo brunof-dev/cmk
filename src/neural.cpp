@@ -86,6 +86,8 @@ void neural::getBlobVec(InferenceEngine::Blob::Ptr output_blob, const uint16_t o
                 rect.ymin = static_cast<uint16_t>(output_blob_data[index + 4] * orig_height);
                 rect.xmax = static_cast<uint16_t>(output_blob_data[index + 5] * orig_width);
                 rect.ymax = static_cast<uint16_t>(output_blob_data[index + 6] * orig_height);
+                rect.width = geometry::getLength(rect.xmin, rect.xmax);
+                rect.height = geometry::getLength(rect.ymin, rect.ymax);
                 Blob blob(rect);
                 blob_vec.push_back(blob);
             }
@@ -107,13 +109,13 @@ void neural::nonMaxSup(std::vector<Blob>& blob_vec) {
             for (std::vector<Blob>::iterator jt = blob_vec.begin(); jt != blob_vec.end(); jt++) {
                 // Non-max suppression
                 struct data::rect rect_b = jt->getRect();
-                if (common::isInner(rect_b, rect_a)) {
+                if (geometry::isInner(rect_b, rect_a)) {
                     // Rectangle B is inside rectangle A
                     jt = blob_vec.erase(jt);
                     jt--;
                 }
                 else {
-                    float iou = common::IOU(rect_a, rect_b);
+                    float iou = geometry::IOU(rect_a, rect_b);
                     if ((iou > behav::IOU_SUP) && (rect_a.conf > rect_b.conf)) {
                         // IOU between rectangles is high enough and rectangle B has lower confidence level
                         jt = blob_vec.erase(jt);
@@ -139,8 +141,7 @@ void neural::detect(InferenceEngine::InferRequest& infer_req, const cv::Mat& img
 
     // Filter bounding boxes
     InferenceEngine::Blob::Ptr output_blob = infer_req.GetBlob(behav::OUTPUT_BLOB);
-    uint16_t frame_width, frame_height;
-    common::getFrameDim(img_data, frame_width, frame_height);
+    uint16_t frame_width = img_data.cols, frame_height = img_data.rows;
     getBlobVec(output_blob, frame_width, frame_height, blob_vec);
     nonMaxSup(blob_vec);
 }

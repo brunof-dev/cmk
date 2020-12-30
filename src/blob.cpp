@@ -21,8 +21,8 @@ Blob::Blob(const struct data::ellipse ellipse) {
 // Getters
 struct data::rect Blob::getRect() const { return(m_rect); }
 struct data::ellipse Blob::getEllipse() const { return(m_ellipse); }
-bool Blob::isDummy(void) const { return(m_dummy); }
-int32_t Blob::getId(void) const { return(m_id); }
+bool Blob::isDummy() const { return(m_dummy); }
+int32_t Blob::getId() const { return(m_id); }
 
 // Setters
 void Blob::setRect(const struct data::rect rect) { m_rect = rect; }
@@ -52,6 +52,8 @@ struct data::rect Blob::getRectFromEllipse(const struct data::ellipse ellipse) {
     rect.xmax = static_cast<uint16_t>(ellipse.xc + ellipse.hx);
     rect.ymin = static_cast<uint16_t>(ellipse.yc - ellipse.hy);
     rect.ymax = static_cast<uint16_t>(ellipse.yc + ellipse.hy);
+    rect.width = geometry::getLength(rect.xmin, rect.xmax);
+    rect.height = geometry::getLength(rect.ymin, rect.ymax);
     return(rect);
 }
 
@@ -60,10 +62,10 @@ struct data::ellipse Blob::getEllipseFromRect(const struct data::rect rect) {
     // Save ellipse similarity
     ellipse.simi = m_ellipse.simi;
     // Calculate ellipse
-    ellipse.xc = static_cast<float>(rect.xmin) + 0.5f * static_cast<float>(rect.xmax - rect.xmin);
-    ellipse.yc = static_cast<float>(rect.ymin) + 0.5f * static_cast<float>(rect.ymax - rect.ymin);
-    ellipse.hx = 0.5f * static_cast<float>(rect.xmax - rect.xmin);
-    ellipse.hy = 0.5f * static_cast<float>(rect.ymax - rect.ymin);
+    ellipse.xc = static_cast<float>(rect.xmin) + 0.5f * static_cast<float>(rect.width);
+    ellipse.yc = static_cast<float>(rect.ymin) + 0.5f * static_cast<float>(rect.height);
+    ellipse.hx = 0.5f * static_cast<float>(rect.width);
+    ellipse.hy = 0.5f * static_cast<float>(rect.height);
     return(ellipse);
 }
 

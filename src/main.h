@@ -9,5 +9,7 @@
 #include "behav.h"
 #include "benchmark.h"
 #include "common.h"
+#include "draw.h"
+#include "frame.h"
 #include "neural.h"
 #include "cmk.h"

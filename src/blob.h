@@ -8,6 +8,7 @@
 // Local modules
 #include "behav.h"
 #include "data.h"
+#include "geometry.h"
 
 class Blob {
     private:

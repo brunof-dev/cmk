@@ -10,8 +10,8 @@
 
 // Local modules
 #include "behav.h"
-#include "common.h"
 #include "blob.h"
+#include "geometry.h"
 
 namespace neural {
     void setup(InferenceEngine::InferRequest& infer_req, uint16_t& net_width, uint16_t& net_height);

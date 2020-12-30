@@ -10,7 +10,7 @@ Kalman::Kalman() {
 }
 
 // Getters
-bool Kalman::isInit(void) const { return(m_init); }
+bool Kalman::isInit() const { return(m_init); }
 
 // Setters
 void Kalman::setInit() { m_init = true; }

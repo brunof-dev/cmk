@@ -9,6 +9,8 @@ namespace data {
         uint16_t ymin;
         uint16_t xmax;
         uint16_t ymax;
+        uint16_t width;
+        uint16_t height;
         float conf;
     };
 
