@@ -8,7 +8,7 @@ bool frame::isStart(const uint32_t frame_num) {
 
 bool frame::isEnd(const uint32_t frame_num) {
     bool rc = false;
-    if (frame_num >= behav::FRAME_STOP) rc = true;
+    if ((behav::FRAME_END) && (frame_num >= behav::FRAME_STOP)) rc = true;
     return(rc);
 }
 

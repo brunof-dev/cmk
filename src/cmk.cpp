@@ -12,7 +12,7 @@ int32_t cmk::findNeighbour(const Blob blob, const std::vector<Blob>& blob_vec) {
             best_dist = dist;
             found = true;
         }
-        if ((best_dist < behav::DIST) && (found == true)) {
+        if ((best_dist < behav::MAX_NB_DIST) && (found == true)) {
             nb_index = it - blob_vec.cbegin();
         }
     }
@@ -20,6 +20,7 @@ int32_t cmk::findNeighbour(const Blob blob, const std::vector<Blob>& blob_vec) {
 }
 
 void cmk::assignID(std::vector<Blob>& blob_vec, const std::vector<std::vector<Blob>>& blob_stack, const uint32_t frame_num, std::vector<Person>& person_vec) {
+    // Assign ID based solely on current/previous CNN results
     std::set<int32_t> nb_id_set;
     for (std::vector<Blob>::iterator it = blob_vec.begin(); it != blob_vec.end(); it++) {
         // Find neighbour blob in previous frames
@@ -51,8 +52,14 @@ void cmk::assignID(std::vector<Blob>& blob_vec, const std::vector<std::vector<Bl
                 // Non-duplicates
                 nb_id_set.insert(nb_id);
                 for (std::vector<Person>::iterator kt = person_vec.begin(); kt != person_vec.end(); kt++) {
+                    // Erase really old people to avoid memory leak
+                    if ((!kt->isLocked()) && (kt->isReallyOld(frame_num))) {
+                        person_vec.erase(kt);
+                        kt--;
+                        continue;
+                    }
                     if (!kt->isEnrolled()) {
-                        // Not enrolled person
+                        // Non-enrolled person
                         if (kt->getId() == nb_id) {
                             kt->addBlobData(frame_num, *it);
                             break;
@@ -68,6 +75,31 @@ void cmk::assignID(std::vector<Blob>& blob_vec, const std::vector<std::vector<Bl
                 }
                 it->setId(nb_id);
             }
+        }
+    }
+
+    // Assign ID based on previous CMK results for lost CNN blobs
+    if (behav::RECOVER_ON) {
+        for (std::vector<Person>::iterator it = person_vec.begin(); it != person_vec.end(); it++) {
+            // Skip already splitted people
+            if (it->isLocked()) continue;
+            // Skip really old people
+            if (it->isReallyOld(frame_num)) continue;
+            // Skip non-enrolled people
+            if (!it->isEnrolled()) continue;
+            // Skip people whose neighbours were found
+            if (it->getLastFrame() == frame_num) continue;
+            // Skip people unlocked just a few frames ago (CMK split/collapse loop cooldown)
+            if (!it->isNeverLocked()) {
+                it->incrUnlockCnt();
+                if (it->getUnlockCnt() < behav::UNLOCK_CNT) continue;
+            }
+            // Skip people whose blobs got stuck
+            if (it->isLazy()) continue;
+            // Enable CMK track
+            std::cout << "Recover lost person: id = " << it->getId() << std::endl;
+            struct data::rect last_rect = it->m_blob_data.at(it->m_blob_data.size() - 1).m_blob.getRect();
+            it->enableCMK(frame_num, last_rect);
         }
     }
 }
@@ -121,31 +153,6 @@ void cmk::trackBlobDataVec(const cv::Mat& img_data, const uint32_t frame_num, st
     }
 }
 
-std::vector<Blob> cmk::getNewBlobVec(const struct data::rect orig_rect) {
-    std::vector<Blob> new_blob_vec;
-    struct data::rect rect_high, rect_low;
-    // Higher blob
-    rect_high.xmin = orig_rect.xmin;
-    rect_high.xmax = orig_rect.xmax;
-    rect_high.ymin = orig_rect.ymin;
-    rect_high.ymax = orig_rect.ymin + 0.5 * orig_rect.height;
-    rect_high.width = geometry::getLength(rect_high.xmin, rect_high.xmax);
-    rect_high.height = geometry::getLength(rect_high.ymin, rect_high.ymax);
-    Blob blob_high(rect_high);
-    // Lower blob
-    rect_low.xmin = orig_rect.xmin;
-    rect_low.xmax = orig_rect.xmax;
-    rect_low.ymin = orig_rect.ymin + 0.5 * orig_rect.height;
-    rect_low.ymax = orig_rect.ymax;
-    rect_low.width = geometry::getLength(rect_low.xmin, rect_low.xmax);
-    rect_low.height = geometry::getLength(rect_low.ymin, rect_low.ymax);
-    Blob blob_low(rect_low);
-    // Add blobs
-    new_blob_vec.push_back(blob_high);
-    new_blob_vec.push_back(blob_low);
-    return(new_blob_vec);
-}
-
 void cmk::split(const uint32_t frame_num, Person& person, std::vector<Person>& person_vec) {
     // Find split condition
     bool found = false;
@@ -179,74 +186,66 @@ void cmk::split(const uint32_t frame_num, Person& person, std::vector<Person>& p
         }
         if (found) break;
     }
-    // Split blobs
+    // Split offending blobs
     if (found) {
-        // Remove original blob
-        person.removeLastBlobData();
-        it->removeLastBlobData();
-        // Create new blobs
-        std::vector<Blob> blob_vec_a = getNewBlobVec(rect_a);
-        std::vector<Blob> blob_vec_b = getNewBlobVec(rect_b);
-        // Add new blobs
-        person.addBlobData(frame_num, blob_vec_a);
-        it->addBlobData(frame_num, blob_vec_b);
-        // Store original blobs before CMK track
-        person.setLockBlobVec(blob_vec_a);
-        it->setLockBlobVec(blob_vec_b);
-        // Lock people to prevent blobs from CNN to be added before CMK has done its job
-        person.lock();
-        it->lock();
+        // Enable CMK track
+        person.enableCMK(frame_num, rect_a);
+        it->enableCMK(frame_num, rect_b);
     }
 }
 
 void cmk::collapse(const uint32_t frame_num, Person& person) {
-    // Find best blob
-    std::vector<Blob> lock_blob_vec = person.getLockBlobVec(), current_blob_vec = person.getLastBlobVec();
-    struct data::rect best_rect;
-    uint32_t best_dist;
-    for (std::vector<Blob>::const_iterator it = lock_blob_vec.cbegin(); it != lock_blob_vec.cend(); it++) {
-        struct data::rect rect_a = it->getRect();
-        for (std::vector<Blob>::const_iterator jt = current_blob_vec.cbegin(); jt != current_blob_vec.cend(); jt++) {
-            struct data::rect rect_b = jt->getRect();
-            uint32_t dist = geometry::distance(rect_a, rect_b);
-            if ((jt == current_blob_vec.cbegin()) || (dist > best_dist)) {
-                best_dist = dist;
-                best_rect = rect_b;
-            }
-        }
-    }
-    // Unlock person to allow CNN to add new blobs
+    // Unlock person to allow CNN to add new blobs (also allows person to be removed)
     person.unlock();
-    // Add best CMK blob to latest frame
-    person.addBlobData(frame_num, Blob(best_rect));
+    // Find best CMK blob
+    std::vector<Blob> lock_blob_vec = person.getLockBlobVec(), current_blob_vec = person.getLastBlobVec();
+    struct data::rect lock_rect_high = lock_blob_vec.at(0).getRect(), lock_rect_low = lock_blob_vec.at(1).getRect();
+    struct data::rect current_rect_high = current_blob_vec.at(0).getRect(), current_rect_low = current_blob_vec.at(1).getRect();
+    uint16_t dist_high = geometry::distance(lock_rect_high, current_rect_high);
+    uint16_t dist_low = geometry::distance(lock_rect_low, current_rect_low);
+    bool best_high = false, best_low = false;
+    if (dist_high >= dist_low) best_high = true;
+    else best_low = true;
+    // Mark people whose blobs did not move enough
+    if ((dist_high < behav::MIN_CMK_DIST) && (dist_low < behav::MIN_CMK_DIST)) {
+        std::cout << "Lazy person: id = " << person.getId() << std::endl;
+        person.setLazy();
+    }
+    else {
+        // Extrapolate best rectangle
+        struct data::rect best_rect;
+        if (best_high) {
+            best_rect = current_rect_high;
+            best_rect.height = best_rect.height * 2;
+            best_rect.ymax = best_rect.ymin + best_rect.height;
+        }
+        else if (best_low) {
+            best_rect = current_rect_low;
+            best_rect.height = best_rect.height * 2;
+            best_rect.ymin = best_rect.ymax - best_rect.height;
+        }
+        // Add best CMK blob to latest frame
+        person.addBlobData(frame_num, Blob(best_rect));
+    }
 }
 
 void cmk::CMK(const cv::Mat& img_data, const uint32_t frame_num, std::vector<Person>& person_vec) {
     for (std::vector<Person>::iterator it = person_vec.begin(); it != person_vec.end(); it++) {
-        // Erase really old people to avoid memory leak
-        if (!it->isLocked() && frame::isReallyOld(frame_num, it->getLastFrame())) {
-            person_vec.erase(it);
-            it--;
-            continue;
+        // Try to split blobs
+        if ((!it->isLocked()) && (it->getLastFrame() == frame_num) && (it->isEnrolled()) && (frame::isSplitActive(frame_num))) {
+            split(frame_num, *it, person_vec);
         }
-        if (behav::CMK_ON) {
-            // Try to split blobs
-            if ((!it->isLocked()) && (it->getLastFrame() == frame_num) && (it->isEnrolled()) && (frame::isSplitActive(frame_num))) {
-                split(frame_num, *it, person_vec);
+        // CMK track
+        if ((it->isLocked()) && (frame::isTrackActive(frame_num))) {
+            if (it->getLockCnt() >= behav::LOCK_CNT) {
+                // Collapse splitted people back to single blob state
+                std::cout << "Collapse person: id = " << it->getId() << std::endl;
+                collapse(frame_num, *it);
             }
-            // CMK track
-            if ((it->isLocked()) && (frame::isTrackActive(frame_num))) {
-                if (it->getLockCnt() >= behav::LOCK_CNT) {
-                    // Collapse splitted people back to single blob state
-                    std::cout << "collapse: id = " << it->getId() << std::endl;
-                    collapse(frame_num, *it);
-                }
-                else {
-                    // Track splitted blobs
-                    std::cout << "trackBlobDataVec: id = " << it->getId() << std::endl;
-                    trackBlobDataVec(img_data, it->getLastFrame(), it->m_blob_data);
-                    it->incrLockCnt();
-                }
+            else {
+                // Track splitted blobs
+                trackBlobDataVec(img_data, it->getLastFrame(), it->m_blob_data);
+                it->incrLockCnt();
             }
         }
     }

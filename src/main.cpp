@@ -1,11 +1,18 @@
 #include "main.h"
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    // Handle command line arguments
+    /*************************************************************************/
+    common::handleArgs(argc, argv);
+    /*************************************************************************/
 
     // Initialize
+    /*************************************************************************/
     cv::VideoCapture vid_reader(behav::INPUT_VID);
     std::vector<std::vector<Blob>> blob_stack;
     std::vector<Person> person_vec;
+    /*************************************************************************/
 
     // Neural network setup
     /*************************************************************************/
@@ -26,7 +33,6 @@ int main() {
 
         // Detect all targets
         /*************************************************************************/
-        // TODO: handle missing targets from CNN that were tracked by CMK
         std::vector<Blob> blob_vec;
         if (frame::isCNNActive(frame_num)) neural::detect(infer_req, frame_data, net_width, net_height, blob_vec);
         /*************************************************************************/
@@ -39,7 +45,7 @@ int main() {
 
         // CMK track
         /*************************************************************************/
-        cmk::CMK(frame_data, frame_num, person_vec);
+        if (behav::CMK_ON) cmk::CMK(frame_data, frame_num, person_vec);
         /*************************************************************************/
 
         // Show results

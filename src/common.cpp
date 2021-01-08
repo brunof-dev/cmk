@@ -63,3 +63,30 @@ bool common::readFrame(cv::VideoCapture& vid_reader, cv::Mat& img_data) {
     if (rc == false) vid_reader.release();
     return(rc);
 }
+
+void common::handleArgs(uint8_t argc, char* argv[]) {
+    for (uint8_t i = 0; i < argc; i++) {
+        if (std::string(argv[i]) == "--manual") {
+            behav::MANUAL_STEP = true;
+        }
+        else if (std::string(argv[i]) == "--frame_start") {
+            behav::FRAME_START = std::stoul(std::string(argv[i + 1]));
+        }
+        else if (std::string(argv[i]) == "--frame_stop") {
+            behav::FRAME_END = true;
+            behav::FRAME_STOP = std::stoul(std::string(argv[i + 1]));
+        }
+        else if (std::string(argv[i]) == "--cmk") {
+            behav::CMK_ON = true;
+        }
+        else if (std::string(argv[i]) == "--recover") {
+            behav::RECOVER_ON = true;
+        }
+        else if (std::string(argv[i]) == "--kalman") {
+            behav::KALMAN_ON = true;
+        }
+        else if (std::string(argv[i]) == "--stack") {
+            behav::STACK_SIZE = std::stoul(std::string(argv[i + 1]));
+        }
+    }
+}

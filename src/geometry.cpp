@@ -49,3 +49,27 @@ bool geometry::isInner(const struct data::rect in, const struct data::rect out) 
 uint16_t geometry::getLength(const uint16_t coord_min, const uint16_t coord_max) {
     return(coord_max - coord_min + 1);
 }
+
+std::vector<struct data::rect> geometry::splitRect(const struct data::rect orig_rect) {
+    std::vector<struct data::rect> rect_vec;
+    struct data::rect rect_high, rect_low;
+    // Higher rectangle
+    rect_high.xmin = orig_rect.xmin;
+    rect_high.xmax = orig_rect.xmax;
+    rect_high.ymin = orig_rect.ymin;
+    rect_high.ymax = orig_rect.ymin + 0.5 * orig_rect.height;
+    rect_high.width = getLength(rect_high.xmin, rect_high.xmax);
+    rect_high.height = getLength(rect_high.ymin, rect_high.ymax);
+    // Lower rectangle
+    rect_low.xmin = orig_rect.xmin;
+    rect_low.xmax = orig_rect.xmax;
+    rect_low.ymin = orig_rect.ymin + 0.5 * orig_rect.height;
+    rect_low.ymax = orig_rect.ymax;
+    rect_low.width = getLength(rect_low.xmin, rect_low.xmax);
+    rect_low.height = getLength(rect_low.ymin, rect_low.ymax);
+    // Rectangle vector
+    rect_vec.push_back(rect_high);
+    rect_vec.push_back(rect_low);
+    return(rect_vec);
+}
+

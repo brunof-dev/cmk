@@ -8,9 +8,10 @@ namespace behav {
     // General behavior
     /*************************************************************************/
     const std::string INPUT_VID = "../data/MOT17-09.webm";
-    const uint32_t FRAME_START = 220;
-    const uint32_t FRAME_STOP = 10000;
-    const bool MANUAL_STEP = false;
+    extern uint32_t FRAME_START;
+    extern bool FRAME_END;
+    extern uint32_t FRAME_STOP;
+    extern bool MANUAL_STEP;
     const uint8_t WAIT_TIME = 1;
     /*************************************************************************/
 
@@ -28,7 +29,7 @@ namespace behav {
     const float POS_ERR = 5;
     const float SCALE_ERR_RATE_MEASURE = 0.005;
     const float SCALE_ERR_RATE_PROC = 0.7;
-    const bool KALMAN_ON = true;
+    extern bool KALMAN_ON;
     /*************************************************************************/
 
     // Neural network
@@ -49,8 +50,9 @@ namespace behav {
 
     // CMK
     /*************************************************************************/
-    const uint16_t STACK_SIZE = 10;
-    const uint16_t DIST = 900;
+    extern uint16_t STACK_SIZE;
+    const uint16_t MAX_NB_DIST = 2500;
+    const uint16_t MIN_CMK_DIST = 10;
     const int32_t INVALID_ID = -1;
     const int32_t INVALID_INDEX = -1;
     const uint8_t OCURRENCE = 5;
@@ -58,7 +60,9 @@ namespace behav {
     const uint8_t SPLIT_FREQ = 5;
     const uint8_t TRACK_FREQ = 1;
     const uint8_t LOCK_CNT = 4;
-    const bool CMK_ON = true;
+    const uint8_t UNLOCK_CNT = 25;
+    extern bool CMK_ON;
+    extern bool RECOVER_ON;
     /*************************************************************************/
 
     // Drawing
