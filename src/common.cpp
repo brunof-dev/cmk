@@ -64,29 +64,134 @@ bool common::readFrame(cv::VideoCapture& vid_reader, cv::Mat& img_data) {
     return(rc);
 }
 
+void common::usage() {
+    std::printf("\nSoftware to track people in a video\n\n");
+    std::printf("-------------------------------------------------------------------------------------\n\n");
+    std::printf("Usage:              ./tracker --video <file> --xml <file> --bin <file> [options]\n\n");
+    std::printf("--video <file>      use <file> video sequence for tracking\n");
+    std::printf("--xml <file>        use <file> for neural network description\n");
+    std::printf("--bin <file>        use <file> for neural network weights\n\n");
+    std::printf("Extended list of options:\n\n");
+    std::printf("--manual            requires key stroke from user to go to the next frame. Default is automatic tracking\n");
+    std::printf("--start <frame>     start tracking from a certain frame. Default is 1\n");
+    std::printf("--stop <frame>      stop tracking when a certain frame is reached. Default is end of video sequence\n");
+    std::printf("--cmk               use CMK method for tracking. Default is not to use CMK\n");
+    std::printf("--recover           attempt to recover people lost by neural network using previous CMK results\n");
+    std::printf("--kalman            use Kalman filtering on top of CMK and mean shift results. Default is not to use Kalman filtering\n");
+    std::printf("--stack <size>      number of frames to consider in the past of the scene. Default is 10\n\n");
+    std::printf("-------------------------------------------------------------------------------------\n\n");
+    exit(0);
+}
+
+bool common::exists(std::string filename) {
+    struct stat buf;
+    return(stat(filename.c_str(), &buf) == 0);
+}
+
 void common::handleArgs(uint8_t argc, char* argv[]) {
-    for (uint8_t i = 0; i < argc; i++) {
-        if (std::string(argv[i]) == "--manual") {
+    // Parse command line
+    for (uint8_t i = 1; i < argc; i++) {
+        std::string arg_str(argv[i]);
+        if ((arg_str == "-h") || (arg_str == "--help")) {
+            usage();
+        }
+        else if (arg_str == "--video") {
+            if ((i + 1) >= argc) {
+                std::printf("Missing argument for %s option. See program usage: ./tracker -h\n", arg_str.c_str());
+                exit(1);
+            }
+            std::string filename(argv[i + 1]);
+            if (!exists(filename)) {
+                std::printf("No such file: %s\n", filename.c_str());
+                exit(1);
+            }
+            behav::INPUT_VID = filename;
+            i++;
+        }
+        else if (arg_str == "--xml") {
+            if ((i + 1) >= argc) {
+                std::printf("Missing argument for %s option. See program usage: ./tracker -h\n", arg_str.c_str());
+                exit(1);
+            }
+            std::string filename(argv[i + 1]);
+            if (!exists(filename)) {
+                std::printf("No such file: %s\n", filename.c_str());
+                exit(1);
+            }
+            behav::MODEL_XML = filename;
+            i++;
+        }
+        else if (arg_str == "--bin") {
+            if ((i + 1) >= argc) {
+                std::printf("Missing argument for %s option. See program usage: ./tracker -h\n", arg_str.c_str());
+                exit(1);
+            }
+            std::string filename(argv[i + 1]);
+            if (!exists(filename)) {
+                std::printf("No such file: %s\n", filename.c_str());
+                exit(1);
+            }
+            behav::MODEL_BIN = filename;
+            i++;
+        }
+        else if (arg_str == "--manual") {
             behav::MANUAL_STEP = true;
         }
-        else if (std::string(argv[i]) == "--frame_start") {
+        else if (arg_str == "--start") {
+            if ((i + 1) >= argc) {
+                std::printf("Missing argument for %s option. See program usage: ./tracker -h\n", arg_str.c_str());
+                exit(1);
+            }
             behav::FRAME_START = std::stoul(std::string(argv[i + 1]));
+            i++;
         }
-        else if (std::string(argv[i]) == "--frame_stop") {
+        else if (arg_str == "--stop") {
+            if ((i + 1) >= argc) {
+                std::printf("Missing argument for %s option. See program usage: ./tracker -h\n", arg_str.c_str());
+                exit(1);
+            }
             behav::FRAME_END = true;
             behav::FRAME_STOP = std::stoul(std::string(argv[i + 1]));
+            i++;
         }
-        else if (std::string(argv[i]) == "--cmk") {
+        else if (arg_str == "--cmk") {
             behav::CMK_ON = true;
         }
-        else if (std::string(argv[i]) == "--recover") {
+        else if (arg_str == "--recover") {
             behav::RECOVER_ON = true;
         }
-        else if (std::string(argv[i]) == "--kalman") {
+        else if (arg_str == "--kalman") {
             behav::KALMAN_ON = true;
         }
-        else if (std::string(argv[i]) == "--stack") {
+        else if (arg_str == "--stack") {
+            if ((i + 1) >= argc) {
+                std::printf("Missing argument for %s option. See program usage: ./tracker -h\n", arg_str.c_str());
+                exit(1);
+            }
             behav::STACK_SIZE = std::stoul(std::string(argv[i + 1]));
+            i++;
         }
+        else {
+            std::printf("Unregonized option: %s. See program usage: ./tracker -h\n", arg_str.c_str());
+            exit(1);
+        }
+    }
+    // Enforce mandatory arguments
+    bool bad_args = false;
+    if (behav::INPUT_VID == "dummy") {
+        std::printf("Missing mandatory argument: --video <file>\n");
+        bad_args = true;
+    }
+    if (behav::MODEL_XML == "dummy") {
+        std::printf("Missing mandatory argument: --xml <file>\n");
+        bad_args = true;
+    }
+    if (behav::MODEL_BIN == "dummy") {
+        std::printf("Missing mandatory argument: --bin <file>\n");
+        bad_args = true;
+    }
+    if (bad_args) {
+        std::printf("See program usage: ./tracker -h\n");
+        exit(1);
     }
 }

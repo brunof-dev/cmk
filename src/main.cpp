@@ -12,6 +12,8 @@ int main(int argc, char* argv[]) {
     cv::VideoCapture vid_reader(behav::INPUT_VID);
     std::vector<std::vector<Blob>> blob_stack;
     std::vector<Person> person_vec;
+    Benchmark benchmark;
+    float time_sum = 0.0f;
     /*************************************************************************/
 
     // Neural network setup
@@ -22,13 +24,18 @@ int main(int argc, char* argv[]) {
     /*************************************************************************/
 
     for(uint32_t frame_num = 1;;frame_num++) {
+        // Benchmarking
+        /*************************************************************************/
+        benchmark.start();
+        /*************************************************************************/
+
         // Capture frame
         /*************************************************************************/
         cv::Mat frame_data;
         if (!common::readFrame(vid_reader, frame_data)) break;
         if (frame::isEnd(frame_num)) break;
         if (!frame::isStart(frame_num)) continue;
-        std::cout << "frame_num: " << frame_num << std::endl;
+        std::printf("[INFO]: frame number = %u\n", frame_num);
         /*************************************************************************/
 
         // Detect all targets
@@ -51,8 +58,18 @@ int main(int argc, char* argv[]) {
         // Show results
         /*************************************************************************/
         draw::drawPersonVec(frame_data, frame_num, person_vec, "rect");
+        std::printf("[INFO]: people count: %u\n", Person::enroll_count);
+        /*************************************************************************/
+
+        // Benchmarking
+        /*************************************************************************/
+        float frame_time = benchmark.end();
+        time_sum += frame_time;
+        float frame_time_avg = time_sum / frame_num;
+        std::printf("[INFO]: frame time: %.2f ms\n", frame_time);
+        std::printf("[INFO]: average frame time: %.2f ms\n", frame_time_avg);
         /*************************************************************************/
     }
-    std::cout << "Program finished." << std::endl;
+    std::printf("Program finished\n");
     return(0);
 }

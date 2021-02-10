@@ -97,7 +97,7 @@ void cmk::assignID(std::vector<Blob>& blob_vec, const std::vector<std::vector<Bl
             // Skip people whose blobs got stuck
             if (it->isLazy()) continue;
             // Enable CMK track
-            std::cout << "Recover lost person: id = " << it->getId() << std::endl;
+            std::printf("[DEBUG]: Recover lost person: id = %d\n", it->getId());
             struct data::rect last_rect = it->m_blob_data.at(it->m_blob_data.size() - 1).m_blob.getRect();
             it->enableCMK(frame_num, last_rect);
         }
@@ -177,7 +177,7 @@ void cmk::split(const uint32_t frame_num, Person& person, std::vector<Person>& p
                 if (kt->getFrameNum() != frame_num) continue;
                 rect_b = kt->m_blob.getRect();
                 if (geometry::IOU(rect_a, rect_b) > behav::IOU_SPLIT) {
-                    std::cout << "Splitting pair (" << person.getId() << ", " << it->getId() << ")" << std::endl;
+                    std::printf("[DEBUG]: Splitting pair (%d, %d)\n",  person.getId(), it->getId());
                     found = true;
                     break;
                 }
@@ -208,7 +208,7 @@ void cmk::collapse(const uint32_t frame_num, Person& person) {
     else best_low = true;
     // Mark people whose blobs did not move enough
     if ((dist_high < behav::MIN_CMK_DIST) && (dist_low < behav::MIN_CMK_DIST)) {
-        std::cout << "Lazy person: id = " << person.getId() << std::endl;
+        std::printf("[DEBUG]: Lazy person: id = %d\n", person.getId());
         person.setLazy();
     }
     else {
@@ -239,7 +239,7 @@ void cmk::CMK(const cv::Mat& img_data, const uint32_t frame_num, std::vector<Per
         if ((it->isLocked()) && (frame::isTrackActive(frame_num))) {
             if (it->getLockCnt() >= behav::LOCK_CNT) {
                 // Collapse splitted people back to single blob state
-                std::cout << "Collapse person: id = " << it->getId() << std::endl;
+                std::printf("[DEBUG]: Collapse person: id = %d\n", it->getId());
                 collapse(frame_num, *it);
             }
             else {

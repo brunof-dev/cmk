@@ -12,6 +12,6 @@ class Benchmark {
 
     public:
         Benchmark();
-        void start();
-        float end(const char* const msg = "elapsed");
+        void start(void);
+        float end(void);
 };

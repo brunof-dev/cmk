@@ -3,6 +3,7 @@
 // General modules
 #include <set>
 #include <vector>
+#include <cstdio>
 
 // SDK modules
 #include <opencv2/opencv.hpp>

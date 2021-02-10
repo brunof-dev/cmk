@@ -7,7 +7,7 @@
 namespace behav {
     // General behavior
     /*************************************************************************/
-    const std::string INPUT_VID = "../data/MOT17-09.webm";
+    extern std::string INPUT_VID;
     extern uint32_t FRAME_START;
     extern bool FRAME_END;
     extern uint32_t FRAME_STOP;
@@ -36,8 +36,8 @@ namespace behav {
     /*************************************************************************/
     const std::string DEVICE = "CPU";
     const std::string INPUT_BLOB = "image_tensor";
-    const std::string MODEL_XML = "../data/model.xml";
-    const std::string MODEL_BIN = "../data/model.bin";
+    extern std::string MODEL_XML;
+    extern std::string MODEL_BIN;
     const std::string OUTPUT_BLOB = "DetectionOutput";
     const int16_t END_CODE = -1;
     const uint16_t HUMAN = 1;

@@ -1,9 +1,0 @@
-float xc = 884.0f, yc = 282.0f, hx = 42.0f, hy = 90.0f, simi = 0.0f, time_sum = 0.0f;
-const std::string INPUT_VID = "../data/MOT17-09.webm";
-const uint8_t FRAME_START = 6;
-const uint8_t FRAME_GAP = 5;
-const uint16_t BINS = 4096;
-const float SHIFT_STEP_MIN = 0.1f;
-const uint8_t ITERATION_MAX = 10;
-const float SCALE_STEP = 0.15;
-const float SCALE_ADAPT = 0.9;

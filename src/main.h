@@ -1,5 +1,8 @@
 #pragma once
 
+// General modules
+#include <cstdio>
+
 // SDK modules
 #include <ie_core.hpp>
 #include <ie_plugin_config.hpp>

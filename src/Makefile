@@ -1,30 +1,22 @@
-SDK_DIR 		:= /opt/intel/openvino_2020.1.023
-IE_DIR 			:= $(SDK_DIR)/deployment_tools/inference_engine
-OPEN_CV_DIR 	:= $(SDK_DIR)/opencv
+SRC_DIR			:= ./
+INC_DIR			:= ../include
+OBJ_DIR			:= ./obj
+DEP_DIR			:= ./obj
+LIB_DIR			:= ../lib
+BIN_DIR			:= ../bin
 
-IE_INC_DIR 		:= $(IE_DIR)/include
-OPEN_CV_INC_DIR := $(OPEN_CV_DIR)/include
-
-IE_LIB_DIR 		:= $(IE_DIR)/lib/intel64
-NGRAPH_LIB_DIR 	:= $(SDK_DIR)/deployment_tools/ngraph/lib
-TBB_LIB_DIR 	:= $(IE_DIR)/external/tbb/lib
-OPEN_CV_LIB_DIR := $(OPEN_CV_DIR)/lib
+IE_INC_DIR 		:= $(INC_DIR)/ie
+OPEN_CV_INC_DIR := $(INC_DIR)/opencv
 
 CC				:= /usr/bin/gcc
 CFLAGS 			:= -std=c++11 -I$(IE_INC_DIR) -I$(OPEN_CV_INC_DIR) -Wall -g -MMD
-LFLAGS 			:= -lstdc++ -lm -L$(IE_LIB_DIR) -linference_engine -L$(NGRAPH_LIB_DIR) -lngraph -L$(TBB_LIB_DIR) -ltbb\
-	       		   -L$(OPEN_CV_LIB_DIR) -lopencv_core -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_highgui
-
-SRC_DIR			:= ./
-OBJ_DIR			:= ./obj
-DEP_DIR			:= ./obj
-BIN_DIR			:= ./bin
+LFLAGS 			:= -lstdc++ -lm -L$(LIB_DIR) -linference_engine -lngraph -ltbb -lopencv_core -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_highgui
 
 SOURCES 		:= $(wildcard $(SRC_DIR)/*.cpp)
 OBJS			:= $(subst $(SRC_DIR),$(OBJ_DIR),$(SOURCES:.cpp=.o))
 DEPS			:= $(OBJS:.o=.d)
 
-TARGET 			:= $(BIN_DIR)/cmk
+TARGET 			:= $(BIN_DIR)/tracker
 
 .PHONY 			:= all clean
 
