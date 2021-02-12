@@ -14,6 +14,7 @@ int main(int argc, char* argv[]) {
     std::vector<Person> person_vec;
     Benchmark benchmark;
     float time_sum = 0.0f;
+    uint32_t time_count = 0;
     /*************************************************************************/
 
     // Neural network setup
@@ -65,7 +66,8 @@ int main(int argc, char* argv[]) {
         /*************************************************************************/
         float frame_time = benchmark.end();
         time_sum += frame_time;
-        float frame_time_avg = time_sum / frame_num;
+        time_count++;
+        float frame_time_avg = time_sum / time_count;
         std::printf("[INFO]: frame time: %.2f ms\n", frame_time);
         std::printf("[INFO]: average frame time: %.2f ms\n", frame_time_avg);
         /*************************************************************************/

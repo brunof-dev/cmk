@@ -96,14 +96,15 @@ void neural::getBlobVec(InferenceEngine::Blob::Ptr output_blob, const uint16_t o
 }
 
 void neural::nonMaxSup(std::vector<Blob>& blob_vec) {
+    std::set<uint32_t> index_set;
     for (std::vector<Blob>::iterator it = blob_vec.begin(); it != blob_vec.end(); it++) {
         // Big box suppression
         struct data::rect rect_a = it->getRect();
-        uint16_t width = rect_a.xmax - rect_a.xmin + 1;
-        uint16_t height = rect_a.ymax - rect_a.ymin + 1;
+        uint16_t width = geometry::getLength(rect_a.xmin, rect_a.xmax);
+        uint16_t height = geometry::getLength(rect_a.ymin, rect_a.ymax);
         if ((width > behav::MAX_WIDTH) || (height > behav::MAX_HEIGHT)) {
-            it = blob_vec.erase(it);
-            it--;
+            uint32_t index = it - blob_vec.begin();
+            index_set.insert(index);
         }
         else {
             for (std::vector<Blob>::iterator jt = blob_vec.begin(); jt != blob_vec.end(); jt++) {
@@ -111,19 +112,25 @@ void neural::nonMaxSup(std::vector<Blob>& blob_vec) {
                 struct data::rect rect_b = jt->getRect();
                 if (geometry::isInner(rect_b, rect_a)) {
                     // Rectangle B is inside rectangle A
-                    jt = blob_vec.erase(jt);
-                    jt--;
+                    uint32_t index = jt - blob_vec.begin();
+                    index_set.insert(index);
                 }
                 else {
                     float iou = geometry::IOU(rect_a, rect_b);
                     if ((iou > behav::IOU_SUP) && (rect_a.conf > rect_b.conf)) {
                         // IOU between rectangles is high enough and rectangle B has lower confidence level
-                        jt = blob_vec.erase(jt);
-                        jt--;
+                        uint32_t index = jt - blob_vec.begin();
+                        index_set.insert(index);
                     }
                 }
             }
         }
+    }
+    // Delete marked blobs
+    for (std::vector<Blob>::iterator it = blob_vec.begin(); it != blob_vec.end(); ) {
+        uint32_t index = it - blob_vec.begin();
+        if (index_set.find(index) != index_set.end()) it = blob_vec.erase(it);
+        else it++;
     }
 }
 

@@ -54,7 +54,7 @@ void cmk::assignID(std::vector<Blob>& blob_vec, const std::vector<std::vector<Bl
                 for (std::vector<Person>::iterator kt = person_vec.begin(); kt != person_vec.end(); kt++) {
                     // Erase really old people to avoid memory leak
                     if ((!kt->isLocked()) && (kt->isReallyOld(frame_num))) {
-                        person_vec.erase(kt);
+                        kt = person_vec.erase(kt);
                         kt--;
                         continue;
                     }
