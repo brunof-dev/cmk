@@ -13,6 +13,7 @@
 #include "common.h"
 #include "frame.h"
 #include "geometry.h"
+#include "msg.h"
 #include "mean_shift.h"
 #include "person.h"
 

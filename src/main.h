@@ -14,5 +14,6 @@
 #include "common.h"
 #include "draw.h"
 #include "frame.h"
+#include "msg.h"
 #include "neural.h"
 #include "cmk.h"

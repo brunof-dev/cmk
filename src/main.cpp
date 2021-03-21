@@ -10,6 +10,7 @@ int main(int argc, char* argv[]) {
     // Initialize
     /*************************************************************************/
     cv::VideoCapture vid_reader(behav::INPUT_VID);
+    cv::VideoWriter vid_writer("out.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 25, cv::Size(960, 540));
     std::vector<std::vector<Blob>> blob_stack;
     std::vector<Person> person_vec;
     Benchmark benchmark;
@@ -24,6 +25,8 @@ int main(int argc, char* argv[]) {
     neural::setup(infer_req, net_width, net_height);
     /*************************************************************************/
 
+    // Inference loop
+    /*************************************************************************/
     for(uint32_t frame_num = 1;;frame_num++) {
         // Benchmarking
         /*************************************************************************/
@@ -36,7 +39,7 @@ int main(int argc, char* argv[]) {
         if (!common::readFrame(vid_reader, frame_data)) break;
         if (frame::isEnd(frame_num)) break;
         if (!frame::isStart(frame_num)) continue;
-        std::printf("[INFO]: frame number = %u\n", frame_num);
+        msg::info("frame number: %u\n", frame_num);
         /*************************************************************************/
 
         // Detect all targets
@@ -59,7 +62,8 @@ int main(int argc, char* argv[]) {
         // Show results
         /*************************************************************************/
         draw::drawPersonVec(frame_data, frame_num, person_vec, "rect");
-        std::printf("[INFO]: people count: %u\n", Person::enroll_count);
+        vid_writer.write(frame_data);
+        msg::info("people count: %u\n", Person::enroll_count);
         /*************************************************************************/
 
         // Benchmarking
@@ -68,10 +72,18 @@ int main(int argc, char* argv[]) {
         time_sum += frame_time;
         time_count++;
         float frame_time_avg = time_sum / time_count;
-        std::printf("[INFO]: frame time: %.2f ms\n", frame_time);
-        std::printf("[INFO]: average frame time: %.2f ms\n", frame_time_avg);
+        msg::info("frame time: %.2f ms\n", frame_time);
+        msg::info("average frame time: %.2f ms\n", frame_time_avg);
         /*************************************************************************/
     }
-    std::printf("Program finished\n");
+    /*************************************************************************/
+
+    // Release resources
+    /*************************************************************************/
+    vid_reader.release();
+    vid_writer.release();
+    /*************************************************************************/
+
+    msg::info("Program finished\n");
     return(0);
 }

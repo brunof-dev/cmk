@@ -8,6 +8,7 @@
 
 // Local modules
 #include "behav.h"
+#include "msg.h"
 #include "person.h"
 
 namespace draw {

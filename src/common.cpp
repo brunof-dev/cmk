@@ -72,6 +72,7 @@ void common::usage() {
     std::printf("--xml <file>        use <file> for neural network description\n");
     std::printf("--bin <file>        use <file> for neural network weights\n\n");
     std::printf("Extended list of options:\n\n");
+    std::printf("--debug             enables debug mode\n");
     std::printf("--manual            requires key stroke from user to go to the next frame. Default is automatic tracking\n");
     std::printf("--start <frame>     start tracking from a certain frame. Default is 1\n");
     std::printf("--stop <frame>      stop tracking when a certain frame is reached. Default is end of video sequence\n");
@@ -133,6 +134,9 @@ void common::handleArgs(uint8_t argc, char* argv[]) {
             }
             behav::MODEL_BIN = filename;
             i++;
+        }
+        else if (arg_str == "--debug") {
+            behav::DEBUG = true;
         }
         else if (arg_str == "--manual") {
             behav::MANUAL_STEP = true;

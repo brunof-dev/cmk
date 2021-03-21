@@ -35,15 +35,19 @@ void draw::drawBlobVec(cv::Mat& img_data, const uint32_t id, const std::vector<B
 
 void draw::drawVecRect(cv::Mat& img_data, const uint32_t id, const cv::Scalar color, const std::vector<Blob>& blob_vec) {
     for (std::vector<Blob>::const_iterator it = blob_vec.cbegin(); it != blob_vec.cend(); it++) {
-        drawText(img_data, id, color, it->getRect());
-        drawBlob(img_data, color, it->getRect());
+        struct data::rect rect = it->getRect();
+        drawText(img_data, id, color, rect);
+        drawBlob(img_data, color, rect);
+        msg::debug("id = %u, xmin = %u, xmax = %u, ymin = %u, ymax = %u\n", id, rect.xmin, rect.xmax, rect.ymin, rect.ymax);
     }
 }
 
 void draw::drawVecEllipse(cv::Mat& img_data, const uint32_t id, const cv::Scalar color, const std::vector<Blob>& blob_vec) {
     for (std::vector<Blob>::const_iterator it = blob_vec.cbegin(); it != blob_vec.cend(); it++) {
-        drawText(img_data, id, color, it->getEllipse());
-        drawBlob(img_data, color, it->getEllipse());
+        struct data::ellipse ellipse = it->getEllipse();
+        drawText(img_data, id, color, ellipse);
+        drawBlob(img_data, color, ellipse);
+        msg::debug("id = %u, xc = %u, yc = %u, hx = %u, hy = %u\n", id, ellipse.xc, ellipse.yc, ellipse.hx, ellipse.hy);
     }
 }
 

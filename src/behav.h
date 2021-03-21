@@ -12,6 +12,7 @@ namespace behav {
     extern bool FRAME_END;
     extern uint32_t FRAME_STOP;
     extern bool MANUAL_STEP;
+    extern bool DEBUG;
     const uint8_t WAIT_TIME = 1;
     /*************************************************************************/
 

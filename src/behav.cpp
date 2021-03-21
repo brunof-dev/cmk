@@ -3,11 +3,12 @@
 namespace behav {
     // General behavior
     /*************************************************************************/
+    std::string INPUT_VID = "dummy";
     uint32_t FRAME_START = 1;
     bool FRAME_END = false;
     uint32_t FRAME_STOP = 100000;
     bool MANUAL_STEP = false;
-    std::string INPUT_VID = "dummy";
+    bool DEBUG = false;
     /*************************************************************************/
 
     // Neural network
